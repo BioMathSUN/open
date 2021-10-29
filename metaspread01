@@ -1,0 +1,37 @@
+(* Run on Mathematica 12.0*)
+c = 0.5;
+e = 0.2;
+s = 12;
+n = 50;
+ini = Table[0, {i, n}, {j, n}];
+ini[[25, 25]] = 1;
+pop[0] = 1;
+
+MatrixPlot[ini] (*make a plot of the ini matrix*)
+
+cc[x_, y_] := c Exp[-((x - 25)^2 + (y - 25)^2)/(2 s^2)];
+ee[x_, y_] := e (1 - 0.95 Exp[-((x - 25)^2 + (y - 25)^2)/(2 s^2)]);
+
+Plot3D[{cc[x, y], ee[x, y]}, {x, 0, n}, {y, 0, n}, PlotRange -> All]
+
+Do[{
+   pop[t] = 0;
+   Do[{
+     q = Random[];
+     p[i, j] =
+      If[ini[[i, j]] > 0.5,
+       If[q < ee[i, j], 0, 1],
+       If[
+        q < cc[i, 
+           j] (ini[[i, Mod[j + 1, n, 1]]] + 
+             ini[[i, Mod[j - 1, n, 1]]] + ini[[Mod[i + 1, n, 1], j]] +
+              ini[[Mod[i - 1, n, 1], j]])/4, 1, 0]
+       ];
+     pop[t] = pop[t] + p[i, j];
+     }, {i, n}, {j, n}];
+   ini = Table[p[i, j], {i, n}, {j, n}];
+   pp[t] = MatrixPlot[ini];
+   }, {t, 1, 300}];
+   
+ListPlot[Table[pop[t], {t, 1, 300}], Frame -> True, FrameLabel -> {"Time", "Occupancy"}]
+ListAnimate[Table[pp[t], {t, 1, 300}]]
